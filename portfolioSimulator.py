@@ -40,7 +40,7 @@ while portfolio < portfolioTarget:
         #Allocation sanity check
         sum_of_allocations += share["Allocation"]
 
-        portfolioLots.append({"Date": date, "ShareName": share["ShareName"], "BuyingPrice": buying_price, "Position": position})
+        portfolioLots.append({"PurchaseDate": date, "ShareName": share["ShareName"], "BuyingPrice": buying_price, "Position": position, "SellingInfo":[]})
         portfolioSummary[share["ShareName"]] += position
     assert(sum_of_allocations == 100)
 
@@ -51,7 +51,7 @@ while portfolio < portfolioTarget:
             dividend_value_per_share = share["Price"]*share["DividendYield"]/float(share["DividendsPerYear"])/100
             reinvestment_price = share["Price"] - dividend_value_per_share
             shares_repurchased = dividend_value_per_share * portfolioSummary[share["ShareName"]] / reinvestment_price
-            portfolioLots.append({"Date": date, "ShareName": share["ShareName"], "BuyingPrice": reinvestment_price, "Position": shares_repurchased})
+            portfolioLots.append({"PurchaseDate": date, "ShareName": share["ShareName"], "BuyingPrice": reinvestment_price, "Position": shares_repurchased, "SellingInfo":[]})
             share["Price"] = reinvestment_price
             portfolioSummary[share["ShareName"]] += shares_repurchased
 
@@ -71,12 +71,7 @@ while portfolio < portfolioTarget:
 
     iteration_counter += 1
 
-# plot
-plt.plot(dates,portfolioValues)
-# beautify the x-labels
-plt.gcf().autofmt_xdate()
 
-plt.show()
 
 # exit()
 # pp.pprint("Lots:")    
@@ -90,10 +85,111 @@ plt.show()
 
 #Need to redraw money from portfolio
 
-yearly_withdrawal_amount = 60000
+yearly_withdrawal_amount = 20000 #After tax
 monthly_withdrawal_amount = yearly_withdrawal_amount/float(12)
-withdrawal_months = 12*100 #100 years
-withdrawal_percent = 4
+withdrawal_years = 3 #100 years
+#withdrawal_percent = 4
 
-for i in range(0, withdrawal_months):
-    pass #to be done
+checking_account = 0
+checking_account_history = []
+withdrawal_dates = []
+
+franking_credits = 0
+franking_credits_history = []
+overdue_capital_gains_tax = 0
+
+portfolio_during_withdrawl_history = []
+
+for i in range(0, withdrawal_years):
+    #we will do it get dividends whenever we get them and if we run out of cash amount we sell stocks every month to make up for the lost money
+
+    for m in range(0, 12):
+        #Dividend payment and reinvestment
+        for share in shares:
+            if(date.month % (12/ share["DividendsPerYear"]) == 0): #Will work for quarterly or semiannually dividends, might need to fix for other cases
+                print("Yay!! ", share["ShareName"], " DividendTime")
+                dividend_value_per_share = share["Price"]*share["DividendYield"]/float(share["DividendsPerYear"])/100
+                ex_div_price = share["Price"] - dividend_value_per_share
+                total_dividend = dividend_value_per_share * portfolioSummary[share["ShareName"]] 
+                this_franking_credits = total_dividend * share["FrankingLevel"]/float(100)*3/7
+                print(total_dividend, this_franking_credits)
+                share["Price"] = ex_div_price
+                checking_account += total_dividend
+                franking_credits += this_franking_credits
+
+        date += datetime.timedelta(days=35)
+        date = datetime.datetime(date.year, date.month, 1)
+
+        portfolio = 0 #Resetting portfolio to recalculate its value based on holdings
+        for share in shares:
+            share["Price"] += (share["Price"] * growthRate/float(12)/100) # Monthly Growth
+            portfolio += share["Price"] * portfolioSummary[share["ShareName"]]
+        print(date, portfolio)
+        dates.append(date)
+        portfolio_during_withdrawl_history.append(portfolio)
+        portfolioValues.append(portfolio)
+
+        #Time to use the money
+        needed_money = yearly_withdrawal_amount/12
+        if (checking_account >= needed_money):
+            checking_account -= needed_money #Money spent
+        else:
+            print("ran out of money")
+            #Sell shares to generate the remaining money which is needed
+            missing_money = needed_money - checking_account
+            #Find the most recent lot which has discount (at least 12 months old)
+            for i in range(0, len(portfolioLots)):
+                this_lot = portfolioLots[-i - 1] #Iterating over it in reverse order
+                if(date - this_lot["PurchaseDate"] > datetime.timedelta(days = 365) and this_lot["Position"]> 0):
+                    #This is the lot we want to sell
+                    for share in shares:
+                        if(share["ShareName"] == this_lot["ShareName"]):
+                            share_price = share["Price"]
+                            lot_value = this_lot["Position"] * share_price
+                            if(missing_money > lot_value):
+                                #sell whole lot
+                                #spend money
+                                #update missing money
+                                #update capital gains
+                                pass
+                            else:
+                                #sell only part of lot
+                                pass
+
+
+            checking_account -= needed_money #Money spent
+
+        checking_account_history.append(checking_account)
+        franking_credits_history.append(franking_credits)
+        withdrawal_dates.append(date)            
+
+
+    #Tax Time!!
+
+
+print(checking_account)
+
+# plot
+plt.figure(1)
+plt.title("Portfolio value over whole age")
+plt.plot(dates,portfolioValues)
+# beautify the x-labels
+plt.gcf().autofmt_xdate()
+
+# plot
+plt.figure(2)
+plt.title("Value of Checking And Franking Credit Account over time")
+plt.plot(withdrawal_dates,checking_account_history)
+plt.plot(withdrawal_dates,franking_credits_history)
+# plt.plot(withdrawal_dates,portfolio_during_withdrawl_history)
+# beautify the x-labels
+plt.gcf().autofmt_xdate()
+
+#plt.show()
+plt.figure(3)
+plt.title("Value of Portfolio over time")
+plt.plot(withdrawal_dates,portfolio_during_withdrawl_history)
+# beautify the x-labels
+plt.gcf().autofmt_xdate()
+
+plt.show()
