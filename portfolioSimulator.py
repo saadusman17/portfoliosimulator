@@ -120,7 +120,7 @@ for i in range(0, withdrawal_years):
         #Time to use the money
         needed_money = yearly_withdrawal_amount/12
         if (checking_account < needed_money):
-            print("ran out of money")
+            # print("ran out of money")
             #Sell shares to generate the remaining money which is needed
             missing_money = needed_money - checking_account
             income_from_share_sales_history.append(missing_money)
