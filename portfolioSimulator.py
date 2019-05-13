@@ -220,40 +220,40 @@ class PortfolioSimulator:
                 self.checking_account -= amount_to_be_invested
 
         # plot
-        plt.figure(1)
+        plt.subplot(2,3,1)
         plt.title("Portfolio value over whole age")
         plt.plot(self.dates,self.portfolioValues)
         # beautify the x-labels
         plt.gcf().autofmt_xdate()
 
         # plot
-        plt.figure(2)
+        plt.subplot(2,3,2)
         plt.title("Value of Checking Account over time")
         plt.plot(self.withdrawal_dates,self.checking_account_history)
         # beautify the x-labels
         plt.gcf().autofmt_xdate()
 
         #plt.show()
-        plt.figure(3)
+        plt.subplot(2,3,3)
         plt.title("Taxable Income")
         plt.plot(self.withdrawal_dates,self.yearly_taxable_income_history)
         # beautify the x-labels
         plt.gcf().autofmt_xdate()
 
         #plt.show()
-        plt.figure(4)
+        plt.subplot(2,3,4)
         plt.title("FrankingCredits")
         plt.plot(self.withdrawal_dates,self.franking_credits_history)
         # beautify the x-labels
         plt.gcf().autofmt_xdate()
 
-        plt.figure(5)
+        plt.subplot(2,3,5)
         plt.title("IncomeTax")
         plt.plot(self.income_tax_history_dates ,self.income_tax_history)
         # beautify the x-labels
         plt.gcf().autofmt_xdate()
 
-        plt.figure(6)
+        plt.subplot(2,3,6)
         plt.title("Amount of Income Generated from Sales")
         plt.plot(self.income_from_share_sales_history_dates,self.income_from_share_sales_history)
         # formatter = plt.FuncFormatter(currency)
@@ -264,19 +264,19 @@ class PortfolioSimulator:
         # plt.show()
 
 
-shares = [{"ShareName":"VAN0003AU", "Price":2.3041, "DividendYield": 2.4, "FrankingLevel": 0, "DividendsPerYear":4, "Allocation":70, "GrowthRate":12.16}, 
-          {"ShareName":"VAN0002AU", "Price":2.2543, "DividendYield":4.3, "FrankingLevel":70, "DividendsPerYear":4, "Allocation":30, "GrowthRate":9.69}]
+shares = [{"ShareName":"VAN0003AU", "Price":2.3041, "DividendYield": 2.4, "FrankingLevel": 0, "DividendsPerYear":4, "Allocation":70, "GrowthRate":6}, #12.16
+          {"ShareName":"VAN0002AU", "Price":2.2543, "DividendYield":4.3, "FrankingLevel":70, "DividendsPerYear":4, "Allocation":30, "GrowthRate":6}] #9.69
 
 portfolio_target = 1000000
 monthly_investment = 5000
-withdrawal_years = 15
+withdrawal_years = 60
 yearly_withdrawal_amount = 40000 #The money that you are going to spend, you'll have to pay taxes on top of it
 
 thisportfolio = PortfolioSimulator(shares, portfolio_target, monthly_investment, withdrawal_years, 40000)
 thisportfolio.work()
 
-shares = [{"ShareName":"AFI", "Price":5.88, "DividendYield": 4.05, "FrankingLevel": 100, "DividendsPerYear":4, "Allocation":50, "GrowthRate":11.7}, 
-          {"ShareName":"ARGO", "Price":7.73, "DividendYield":4.14, "FrankingLevel":100, "DividendsPerYear":4, "Allocation":50, "GrowthRate":7.7}]
+shares = [{"ShareName":"AFI", "Price":5.88, "DividendYield": 4.05, "FrankingLevel": 100, "DividendsPerYear":4, "Allocation":50, "GrowthRate":6},  # 11.7
+          {"ShareName":"ARGO", "Price":7.73, "DividendYield":4.14, "FrankingLevel":100, "DividendsPerYear":4, "Allocation":50, "GrowthRate":6}] # 7.7
 
 thisportfolio = PortfolioSimulator(shares, portfolio_target, monthly_investment, withdrawal_years, 40000)
 thisportfolio.work()
