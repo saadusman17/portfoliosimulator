@@ -8,13 +8,14 @@ pp = pprint.PrettyPrinter(indent=4)
 
 
 class PortfolioSimulator:
-    def __init__(self,shares, portfolio_target, monthly_investment, withdrawal_years, yearly_withdrawal_amount):
+    def __init__(self,shares, portfolio_target, monthly_investment, withdrawal_years, yearly_withdrawal_amount, did_labour_win):
     #User Input
         self.shares = shares
         self.portfolio_target = portfolio_target
         self.monthly_investment = monthly_investment
         self.withdrawal_years = withdrawal_years
         self.yearly_withdrawal_amount = yearly_withdrawal_amount #The money that you are going to spend, you'll have to pay taxes on top of it
+        self.did_labour_win = did_labour_win
         #End of User Input
 
         #Internal Variables
@@ -96,7 +97,10 @@ class PortfolioSimulator:
                             amount -= money_from_sale
                             # Update capital gains , applying 50% discount
                             if(self.date - this_lot["PurchaseDate"] > datetime.timedelta(days=365)):
-                                self.yearly_taxable_income += capital_gains/2
+                                if(self.did_labour_win):
+                                    self.yearly_taxable_income += capital_gains * 75/float(100)
+                                else:
+                                    self.yearly_taxable_income += capital_gains/float(2)
                             else:
                                 print("Should never reach here")
                                 self.yearly_taxable_income = capital_gains
@@ -204,6 +208,10 @@ class PortfolioSimulator:
                 income_tax = 54547+ 45* (self.yearly_taxable_income - 180000)/float(100)
                 income_tax -= self.franking_credits   
 
+            if(self.did_labour_win):
+                if(income_tax < 0):
+                    income_tax = 0
+
             self.income_tax_history.append(income_tax)
             self.income_tax_history_dates.append(self.date)
 
@@ -264,21 +272,24 @@ class PortfolioSimulator:
         # plt.show()
 
 
-shares = [{"ShareName":"VAN0003AU", "Price":2.3041, "DividendYield": 2.4, "FrankingLevel": 0, "DividendsPerYear":4, "Allocation":70, "GrowthRate":6}, #12.16
-          {"ShareName":"VAN0002AU", "Price":2.2543, "DividendYield":4.3, "FrankingLevel":70, "DividendsPerYear":4, "Allocation":30, "GrowthRate":6}] #9.69
+# shares = [{"ShareName":"VAN0003AU", "Price":2.3041, "DividendYield": 2.4, "FrankingLevel": 0, "DividendsPerYear":4, "Allocation":70, "GrowthRate":6}, #12.16
+#           {"ShareName":"VAN0002AU", "Price":2.2543, "DividendYield":4.3, "FrankingLevel":70, "DividendsPerYear":4, "Allocation":30, "GrowthRate":6}] #9.69
 
 portfolio_target = 1000000
 monthly_investment = 5000
-withdrawal_years = 60
+withdrawal_years = 30
 yearly_withdrawal_amount = 40000 #The money that you are going to spend, you'll have to pay taxes on top of it
 
-thisportfolio = PortfolioSimulator(shares, portfolio_target, monthly_investment, withdrawal_years, 40000)
-thisportfolio.work()
+# thisportfolio = PortfolioSimulator(shares, portfolio_target, monthly_investment, withdrawal_years, 40000)
+# thisportfolio.work()
 
 shares = [{"ShareName":"AFI", "Price":5.88, "DividendYield": 4.05, "FrankingLevel": 100, "DividendsPerYear":4, "Allocation":50, "GrowthRate":6},  # 11.7
           {"ShareName":"ARGO", "Price":7.73, "DividendYield":4.14, "FrankingLevel":100, "DividendsPerYear":4, "Allocation":50, "GrowthRate":6}] # 7.7
 
-thisportfolio = PortfolioSimulator(shares, portfolio_target, monthly_investment, withdrawal_years, 40000)
+thisportfolio = PortfolioSimulator(shares, portfolio_target, monthly_investment, withdrawal_years, 40000,True)
+thisportfolio.work()
+
+thisportfolio = PortfolioSimulator(shares, portfolio_target, monthly_investment, withdrawal_years, 40000,False)
 thisportfolio.work()
 
 plt.show()
